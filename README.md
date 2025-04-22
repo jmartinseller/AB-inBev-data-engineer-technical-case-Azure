@@ -5,6 +5,7 @@ Este projeto implementa um pipeline de dados para consumir informações sobre c
 
 ## Arquitetura
 ![alt text](Images/arquitetura_ab_inbev.png)
+
 A arquitetura da solução segue o modelo Medallion Architecture, sendo composta por três camadas principais: Bronze, Silver e Gold. A plataforma escolhida para o processamento é o Azure Databricks, enquanto a orquestração é feita via Azure Data Factory (ADF). O armazenamento dos dados é realizado no Databricks File System (DBFS).
 ## Camada Bronze — Dados Brutos
 Objetivo: Armazenar os dados brutos obtidos da API sem qualquer transformação, preservando o formato original para análises futuras.
