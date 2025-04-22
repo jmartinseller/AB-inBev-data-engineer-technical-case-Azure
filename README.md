@@ -46,7 +46,7 @@ O pipeline contém três atividades principais:
 ## Trigger de Execução
 -	A execução do pipeline é agendada para rodar diariamente às 08:00h (ou sob demanda, dependendo da necessidade).
 
-![alt text](Images\agendamento_adf.png)
+![alt text](Images/agendamento_adf.png)
 
 ## Notebooks Databricks
 bronze_extraction.py
@@ -54,7 +54,7 @@ bronze_extraction.py
 -	Características:
     -	Lida com paginação automática para garantir que todos os registros sejam recuperados.
     -	Armazena os dados brutos no formato Delta table no caminho específico da camada Bronze do Unity Catalog.
-![alt text](Images\qtd_registros_api.png)
+![alt text](Images/qtd_registros_api.png)
 
 silver_transformation.py
 -	Objetivo: Realizar a transformação dos dados da camada Bronze para Silver, limpando e normalizando os dados.
@@ -62,9 +62,9 @@ silver_transformation.py
     -	Lê os dados da camada Bronze armazenados em formato Delta table.
     -	Aplica limpeza (remoção de dados nulos irrelevantes), normalização (padronização de tipos de dados) e particionamento (por estado e cidade).
     -	Os dados são então escritos de volta em uma Delta table particionada.
-![alt text](Images\particionamento_silver.png)
+![alt text](Images/particionamento_silver.png)
 
-![alt text](Images\particionamento_silver2.png)
+![alt text](Images/particionamento_silver2.png)
 
 gold_aggregation.py
 -	Objetivo: Agregar os dados da camada Silver para fornecer insights analíticos na camada Gold.
@@ -72,10 +72,10 @@ gold_aggregation.py
     -	Lê os dados da camada Silver.
     -	Aplica agregações como contagem de cervejarias por tipo (brewery_type) e localização (estado e cidade).
     -	Armazena os resultados na camada Gold, tanto em formato Delta table quanto em uma view, para facilitar a consulta por stakeholders.
-![alt text](Images\view_gold.png)
+![alt text](Images/view_gold.png)
 
 Após a execução dos notebooks teremos um Catálago de dados no databricks semelhante ao apresentado na imagem abaixo:
-![alt text](Images\catalago.png)
+![alt text](Images/catalago.png)
 
 ## Monitoramento e Alertas
 Para garantir a integridade dos dados e a execução correta do pipeline, foram implementados processos de monitoramento e alertas.
