@@ -1,0 +1,64 @@
+{
+    "job_id": 64313596074042,
+    "creator_user_name": "1080610@sga.pucminas.br",
+    "run_as_user_name": "1080610@sga.pucminas.br",
+    "run_as_owner": true,
+    "settings": {
+      "name": "pipeline_brewery",
+      "email_notifications": {
+        "no_alert_for_skipped_runs": false
+      },
+      "webhook_notifications": {},
+      "timeout_seconds": 0,
+      "max_concurrent_runs": 1,
+      "tasks": [
+        {
+          "task_key": "Bronze_Layer",
+          "run_if": "ALL_SUCCESS",
+          "notebook_task": {
+            "notebook_path": "/Workspace/Users/1080610@sga.pucminas.br/bronze_extraction",
+            "source": "WORKSPACE"
+          },
+          "timeout_seconds": 0,
+          "email_notifications": {},
+          "webhook_notifications": {}
+        },
+        {
+          "task_key": "Silver_Layer",
+          "depends_on": [
+            {
+              "task_key": "Bronze_Layer"
+            }
+          ],
+          "run_if": "ALL_SUCCESS",
+          "notebook_task": {
+            "notebook_path": "/Workspace/Users/1080610@sga.pucminas.br/silver_transformation",
+            "source": "WORKSPACE"
+          },
+          "timeout_seconds": 0,
+          "email_notifications": {},
+          "webhook_notifications": {}
+        },
+        {
+          "task_key": "Gold_Layer",
+          "depends_on": [
+            {
+              "task_key": "Silver_Layer"
+            }
+          ],
+          "run_if": "ALL_SUCCESS",
+          "notebook_task": {
+            "notebook_path": "/Workspace/Users/1080610@sga.pucminas.br/gold_aggregation",
+            "source": "WORKSPACE"
+          },
+          "timeout_seconds": 0,
+          "email_notifications": {}
+        }
+      ],
+      "format": "MULTI_TASK",
+      "queue": {
+        "enabled": true
+      }
+    },
+    "created_time": 1745347855548
+  }
