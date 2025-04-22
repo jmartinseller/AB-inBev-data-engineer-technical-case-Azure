@@ -45,6 +45,7 @@ O pipeline contém três atividades principais:
 -	Alertas: Em caso de falha, alertas por e-mail são disparados via integração com o Azure Monitor, garantindo a visibilidade dos problemas.
 ## Trigger de Execução
 -	A execução do pipeline é agendada para rodar diariamente às 08:00h (ou sob demanda, dependendo da necessidade).
+
 ![alt text](Images\agendamento_adf.png)
 
 ## Notebooks Databricks
