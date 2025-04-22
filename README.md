@@ -1,94 +1,99 @@
-# Technical Case: Breweries Case – Usando Databricks e Azure Data Factory para dados de API
+# Technical Case: Breweries Case – Using Databricks and Azure Data Factory for API Data
 
-## Visão Geral do Projeto
-Este projeto implementa um pipeline de dados para consumir informações sobre cervejarias através da API Open Brewery DB, processá-las e armazená-las em um data lake utilizando a arquitetura medallion (camadas Bronze, Silver e Gold). A solução faz uso do Azure Databricks para o processamento com PySpark e da Azure Data Factory para orquestração do pipeline de dados.
+## Project Overview
+This project implements a data pipeline to consume brewery information from the Open Brewery DB API, process it, and store it in a data lake using the medallion architecture (Bronze, Silver, and Gold layers). The solution uses Azure Databricks for processing with PySpark and Azure Data Factory for data pipeline orchestration.
 
-## Arquitetura
+## Architecture
 ![alt text](Images/arquitetura_ab_inbev.png)
 
-A arquitetura da solução segue o modelo Medallion Architecture, sendo composta por três camadas principais: Bronze, Silver e Gold. A plataforma escolhida para o processamento é o Azure Databricks, enquanto a orquestração é feita via Azure Data Factory (ADF). O armazenamento dos dados é realizado no Databricks File System (DBFS).
-## Camada Bronze — Dados Brutos
-Objetivo: Armazenar os dados brutos obtidos da API sem qualquer transformação, preservando o formato original para análises futuras.
--	Formato: Delta table.
+The solution’s architecture follows the Medallion Architecture model, consisting of three main layers: Bronze, Silver, and Gold. Azure Databricks was chosen as the processing platform, while Azure Data Factory (ADF) handles orchestration. Data is stored in the Databricks File System (DBFS).
+
+## Bronze Layer — Raw Data
+Goal: Store raw data retrieved from the API without any transformation, preserving the original format for future analysis.
+-	Format: Delta table.
 -	Detalhes:
-    -	Dados extraídos da API pública da Open Brewery DB com paginação automatizada.
-    -	Nenhuma transformação é aplicada nesta camada.
-    -	Arquivos são armazenados no DBFS na camada Bronze.
+    -	Data extracted from the public Open Brewery DB API with automated pagination.
+    -	No transformations are applied at this layer.
+    -	Files are stored in DBFS in the Bronze layer.
 
-## Camada Silver — Dados Processados
-Objetivo: Limpar, normalizar e particionar os dados para garantir consistência e qualidade para as análises.
--	Formato: Delta table.
--	Transformações Aplicadas:
-    -	Remoção de campos nulos irrelevantes.
-    -	Conversão de tipos de dados para um formato padrão.
-    -	Particionamento dos dados por state (estado) e city (cidade) para facilitar o processamento e análise de dados.
-## Camada Gold — Dados Agregados
-Objetivo: Gerar uma camada analítica com dados agregados para fornecer insights de negócio.
--	Formato: Delta table e view.
--	Transformações Aplicadas:
-    -	Contagem de cervejarias por brewery_type (tipo de cervejaria) e local (por state e city).
+## Silver Layer — Processed Data
+Goal: Clean, normalize, and partition the data to ensure consistency and quality for analysis.
+-	Format: Delta table.
+-	Transformations Applied:
+    -	Removal of irrelevant null fields.
+    -	Conversion of data types to a standard format.
+    -	Partitioning of data by state and city to facilitate processing and analysis.
+
+## Gold Layer — Aggregated Data
+Goal: Generate an analytical layer with aggregated data to provide business insights.
+-	Format: Delta table and view.
+-	Transformations Applied:
+    -	Count of breweries by brewery_type and location (by state and city).
 
 
-## Orquestração com Azure Data Factory
-A orquestração do pipeline é feita através do Azure Data Factory (ADF), utilizando um pipeline com as seguintes atividades principais:
-Pipeline ADF
-O pipeline contém três atividades principais:
-1.	Ingestão da camada Bronze:
--	Executa o notebook bronze_extraction.py, que consome os dados da Open Brewery DB API e armazena os dados brutos na camada Bronze.
-2.	Transformação da camada Bronze para Silver:
--	Executa o notebook silver_transformation.py, que realiza a limpeza e normalização dos dados, além de particioná-los por state e city.
-3.	Agregação da camada Silver para Gold:
--	Executa o notebook gold_aggregation.py, que gera agregações por brewery_type, state e city, e armazena o resultado na camada Gold, tanto em formato de Delta table quanto em uma view.
+## Orchestration with Azure Data Factory
+The pipeline orchestration is handled through Azure Data Factory (ADF), using a pipeline with the following main activities:
+ADF Pipeline
+The pipeline contains three main activities:
+1.	Bronze Layer Ingestion:
+-	Executes the bronze_extraction.py notebook, which consumes data from the Open Brewery DB API and stores the raw data in the Bronze layer.
+  
+2.	Transformation from Bronze to Silver:
+-	Executes the silver_transformation.py notebook, which performs data cleaning and normalization, and partitions it by state and city.
+  
+3.	Aggregation from Silver to Gold:
+-	Executes the gold_aggregation.py notebook, which generates aggregations by brewery_type, state, and city, and stores the result in the Gold layer as both a Delta table and a view.
 
-## Controle de Fluxo e Tratamento de Erro
--	Controle de fluxo: O pipeline é configurado para garantir que as atividades sejam executadas na ordem correta.
--	Retries automáticos: As atividades possuem configurações de retries automáticos em caso de falhas para garantir a robustez do processo.
--	Alertas: Em caso de falha, alertas por e-mail são disparados via integração com o Azure Monitor, garantindo a visibilidade dos problemas.
-## Trigger de Execução
--	A execução do pipeline é agendada para rodar diariamente às 08:00h (ou sob demanda, dependendo da necessidade).
+## Flow Control and Error Handling
+-	Flow control: The pipeline is configured to ensure that activities run in the correct order.
+-	Automatic retries: Activities have automatic retry settings in case of failure, ensuring the robustness of the process.
+-	Alerts: In case of failure, email alerts are sent via Azure Monitor integration, ensuring visibility of issues.
+## Execution Trigger
+-	The pipeline is scheduled to run daily at 08:00 AM (or on-demand as needed).
 
 ![alt text](Images/agendamento_adf.png)
 
-## Notebooks Databricks
+## Databricks Notebooks
 bronze_extraction.py
--	Objetivo: Consumir os dados da API pública da Open Brewery DB e armazená-los na camada Bronze.
--	Características:
-    -	Lida com paginação automática para garantir que todos os registros sejam recuperados.
-    -	Armazena os dados brutos no formato Delta table no caminho específico da camada Bronze do Unity Catalog.
+-	Goal: Consume data from the Open Brewery DB public API and store it in the Bronze layer.
+-   Features:
+    -	Handles automatic pagination to ensure all records are retrieved.
+    -	Stores raw data in Delta table format in the Bronze layer path of Unity Catalog.
 ![alt text](Images/qtd_registros_api.png)
 
 silver_transformation.py
--	Objetivo: Realizar a transformação dos dados da camada Bronze para Silver, limpando e normalizando os dados.
--	Características:
-    -	Lê os dados da camada Bronze armazenados em formato Delta table.
-    -	Aplica limpeza (remoção de dados nulos irrelevantes), normalização (padronização de tipos de dados) e particionamento (por estado e cidade).
-    -	Os dados são então escritos de volta em uma Delta table particionada.
+-	Goal: Transform data from the Bronze to the Silver layer, cleaning and normalizing it.
+-	Features:
+    -	Reads data from the Bronze layer stored in Delta table format.
+    -	Applies cleaning (removal of irrelevant null values), normalization (standardization of data types), and partitioning (by state and city).
+    -	he data is then written back into a partitioned Delta table.
 ![alt text](Images/particionamento_silver.png)
 
 ![alt text](Images/particionamento_silver2.png)
 
 gold_aggregation.py
--	Objetivo: Agregar os dados da camada Silver para fornecer insights analíticos na camada Gold.
--	Características:
-    -	Lê os dados da camada Silver.
-    -	Aplica agregações como contagem de cervejarias por tipo (brewery_type) e localização (estado e cidade).
-    -	Armazena os resultados na camada Gold, tanto em formato Delta table quanto em uma view, para facilitar a consulta por stakeholders.
+-	Goal: Aggregate data from the Silver layer to provide analytical insights in the Gold layer.
+-	Features:
+    -	Reads data from the Silver layer.
+    -	Applies aggregations such as count of breweries by type (brewery_type) and location (state and city).
+    -	Stores results in the Gold layer as a Delta table and a view, making it easier for stakeholders to query.
 ![alt text](Images/view_gold.png)
 
-Após a execução dos notebooks teremos um Catálago de dados no databricks semelhante ao apresentado na imagem abaixo:
+After executing the notebooks, we will have a Databricks Data Catalog similar to the image below:
 ![alt text](Images/catalago.png)
 
-## Monitoramento e Alertas
-Para garantir a integridade dos dados e a execução correta do pipeline, foram implementados processos de monitoramento e alertas.
-Monitoramento via Azure Data Factory (ADF)
--	Retry automático: Em caso de falhas nas atividades do pipeline, o ADF está configurado para tentar novamente automaticamente, minimizando interrupções.
--	Alertas de falhas: Através da integração com o Azure Monitor, alertas são disparados para um grupo de e-mail configurado sempre que uma falha ocorre no pipeline.
-Validações de Dados
--	Verificação de quantidade mínima de registros por camada: Cada camada do pipeline (Bronze, Silver e Gold) possui uma validação para garantir que os dados processados não estejam vazios ou com quantidade de registros abaixo do esperado.
--	Checagem de schema esperado: Antes de avançar para as camadas seguintes, um processo de validação é executado para garantir que os dados estejam no formato e schema esperados.
--	Consistência dos dados: São realizadas verificações de consistência para assegurar que os dados não foram corrompidos durante as transformações ou ingestão.
+## Monitoring and Alerts
+To ensure data integrity and proper pipeline execution, monitoring and alerting processes were implemented
+Monitoring via Azure Data Factory (ADF)
+-	Automatic retries: In case of activity failures, ADF is configured to retry automatically, minimizing interruptions.
+-	Failure alerts: Through Azure Monitor integration, alerts are sent to a configured email group whenever a pipeline failure occurs.
+Data Validations
+-	Minimum record count check per layer: Each pipeline layer (Bronze, Silver, and Gold) includes a validation to ensure processed data is not empty or below expected thresholds.
+-	Expected schema check: Before moving to the next layers, a validation process ensures that data is in the correct format and schema.
+-	Data consistency: Consistency checks are performed to ensure that data has not been corrupted during ingestion or transformations.
 
-## Considerações Finais
-Este pipeline de dados foi projetado para ser escalável e resiliente, utilizando as melhores práticas de engenharia de dados na plataforma Azure. Ele pode ser facilmente estendido para incluir novas fontes de dados ou transformações adicionais, conforme necessário. A utilização do Azure Databricks e Azure Data Factory garante não apenas a performance e flexibilidade, mas também o controle e monitoramento eficazes de cada etapa do processo.
-Algumas etapas deste processo não puderam ser implementadas devido as restrições da conta disponível para desenvolvimento, porém, foram desenvolvidos mecanismos paralelos que possibilitassem teste e validações dos processes extração, tratamento e armazenamento dos dados
+## Final Considerations
+This data pipeline was designed to be scalable and resilient, applying best practices in data engineering on the Azure platform. It can be easily extended to include new data sources or additional transformations as needed. The use of Azure Databricks and Azure Data Factory ensures not only performance and flexibility, but also effective control and monitoring of each step of the process.
+
+Some steps in this process could not be implemented due to restrictions in the available development account. However, parallel mechanisms were developed to enable testing and validation of the data extraction, processing, and storage procedures.
 
