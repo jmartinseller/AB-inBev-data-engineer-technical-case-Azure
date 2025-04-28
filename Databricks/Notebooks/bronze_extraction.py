@@ -4,6 +4,9 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import lit
 from datetime import datetime
 
+# Inicializa sessão Spark
+spark = SparkSession.builder.appName("case_API").getOrCreate()
+
 #URL Base e limites
 base_url = "https://api.openbrewerydb.org/v1/breweries"
 per_page = 200
