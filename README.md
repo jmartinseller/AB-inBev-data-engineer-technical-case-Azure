@@ -1,4 +1,4 @@
-# Technical Case: Breweries Case – Using Databricks and Azure Data Factory for API Data
+# Technical Case: Using Databricks and Azure Data Factory for API Data
 
 ## Project Overview
 This project implements a data pipeline to consume brewery information from the Open Brewery DB API, process it, and store it in a data lake using the medallion architecture (Bronze, Silver, and Gold layers). The solution uses Azure Databricks for processing with PySpark and Azure Data Factory for data pipeline orchestration.
